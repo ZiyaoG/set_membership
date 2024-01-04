@@ -1,8 +1,8 @@
-%% Copyright Ziyao Guo UIUC 
+%% Ziyao Guo UIUC 
 clear all;
 close all;
 %% Simulation parameters
-T=10; % 5 250
+T=300; % 5 250
 p=0.8; % confidence level
 delta=1-p;
 
@@ -11,7 +11,8 @@ A_star=0.8;
 B_star=1;
 mu_w=0;
 mu_u=0;
-sigma_w=0.5;
+% sigma_w=0.5;
+sigma_w=1;
 sigma_u=0.5;
 w_max=1;
 u_max=1;
@@ -53,46 +54,52 @@ end
 %% LSE confidence bound from Abbasi-Yadkori and Szepesvari [2011] 
 ineq_LSE = calculate_LSE(X,Z,T,A_mesh,B_mesh,lambda,delta,L,S);
 
-figure('Name','LSE')
-h = pcolor(A_mesh,B_mesh,double(ineq_LSE)) ;
-h.EdgeColor = 'none' ;
-xlabel('A');
-ylabel('B');
-hold on;
-plot(A_star,B_star,'*');
-title('LSE Confidence Set 80%')
-
-%% plot hoefding induced uncertainty set, using a recursive way
-
-ineq_hoefding_recur = calculate_hoeffding(X,U,T,A_mesh,B_mesh,sigma_w,p);
-
-figure('Name','Hoeffding')
-h = pcolor(A_mesh,B_mesh,ineq_hoefding_recur) ;
-h.EdgeColor = 'none' ;
-xlabel('A');
-ylabel('B');
-hold on;
-plot(A_star,B_star,'*');
-title('Hoeffding Induced Set 80%')
+%% hoefding induced uncertainty set, using a recursive way
+% ineq_hoefding_recur = calculate_hoeffding(X,U,T,A_mesh,B_mesh,sigma_w,p);
 
 %% Chebyshev's inequality, with Yi=x_i+1 - Ax_i-Bu_i
 ineq_chebyshev = calculate_chebyshev(X,U,T,A_mesh,B_mesh,sigma_w,p);
 
-figure('Name','Chebyshev')
-h = pcolor(A_mesh,B_mesh,double(ineq_chebyshev)) ;
-h.EdgeColor = 'none' ;
+%% chisquare
+ineq_chisquare = calculate_chisquare(X,U,T,A_mesh,B_mesh,p);
+
+%% plot
+%---could be improved---------------------------------------------%
+h1 = surf(A_mesh,B_mesh,double(ineq_LSE),'FaceColor','blue') ;
+set(h1,'LineStyle','none');
 xlabel('A');
 ylabel('B');
 hold on;
-plot(A_star,B_star,'*');
-title('Chebyshev Induced Set 80%')
+plot(A_star,B_star,'r*');
+title('LSE Confidence Set p=0.8,T=300')
 
+% h2 = surf(A_mesh,B_mesh,0.5*ineq_hoefding_recur) ;
+% set(h2,'LineStyle','none');
+
+% h3 = surf(A_mesh,B_mesh,0.8*double(ineq_chebyshev)) ;
+% set(h3,'LineStyle','none');
+
+h4= surf(A_mesh,B_mesh,0.5*double(ineq_chisquare),'FaceColor','green') ;
+set(h4,'LineStyle','none');
+
+map = [1.0 1.0 1.0
+    1.0 0 0
+    0 1.0 0
+    0 0 1.0];
+colormap(map)
+% colorbar
+
+alpha(0.5)
+legend([h1, h4], {'LSE', 'Chi-Squared'});
+zlim([0.01,1.2])
+view(0,90)
 %% Convergence test
-T_series=5:3:350;
+T_series=5:2:350;
 length=size(T_series,2);
 volume_LSE=zeros(length,1);
 volume_chebyshev=zeros(length,1);
 volume_hoeffding=zeros(length,1);
+volume_chisquare=zeros(length,1);
 
 for t=1:length
     T=T_series(t); 
@@ -118,16 +125,18 @@ for t=1:length
     end
 
     ineq_LSE = calculate_LSE(X,Z,T,A_mesh,B_mesh,lambda,delta,L,S);
+    ineq_chisquare = calculate_chisquare(X,U,T,A_mesh,B_mesh,p);
     ineq_chebyshev = calculate_chebyshev(X,U,T,A_mesh,B_mesh,sigma_w,p);
-    tic;
-    ineq_hoefding_recur = calculate_hoeffding(X,U,T,A_mesh,B_mesh,sigma_w,p);
-    toc;
+    % tic;
+    % ineq_hoefding_recur = calculate_hoeffding(X,U,T,A_mesh,B_mesh,sigma_w,p);
+    % toc;
     % log data
     volume_LSE(t)=sum(ineq_LSE,'all')*pixel^2;
     volume_chebyshev(t)=sum(ineq_chebyshev,'all')*pixel^2;
-    volume_hoeffding(t)=sum(ineq_hoefding_recur,'all')*pixel^2;
+    % volume_hoeffding(t)=sum(ineq_hoefding_recur,'all')*pixel^2;
+    volume_chisquare(t)=sum(ineq_chisquare,'all')*pixel^2;
     fprintf('Finished analysis for T=%d\n', T);
-    
+
 end
 
 figure('Name','Convergence')
@@ -137,8 +146,11 @@ ylabel('volume')
 hold on
 grid on
 semilogy(T_series,volume_chebyshev)
-semilogy(T_series,volume_hoeffding)
-legend('LSE','Chebyshev','Hoeffding')
+% semilogy(T_series,volume_hoeffding)
+semilogy(T_series,volume_chisquare)
+
+% legend('LSE','Chebyshev','Hoeffding','chisquare')
+legend('LSE','Chebyshev','chisquare')
 
 
 
