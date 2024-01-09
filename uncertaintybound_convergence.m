@@ -2,7 +2,7 @@
 clear all;
 close all;
 %% Simulation parameters
-T=300; % 5 250
+T=350; % 5 250
 p=0.8; % confidence level
 delta=1-p;
 
@@ -63,14 +63,17 @@ ineq_chebyshev = calculate_chebyshev(X,U,T,A_mesh,B_mesh,sigma_w,p);
 %% chisquare
 ineq_chisquare = calculate_chisquare(X,U,T,A_mesh,B_mesh,p);
 
+%% gaussian - theretical best of set membership
+ineq_gaussian = calculate_gaussian(X,U,T,A_mesh,B_mesh,p);
+
 %% plot
 %---could be improved---------------------------------------------%
-h1 = surf(A_mesh,B_mesh,double(ineq_LSE),'FaceColor','blue') ;
+h1 = surf(A_mesh,B_mesh,0.8*double(ineq_LSE),'FaceColor','blue') ;
 set(h1,'LineStyle','none');
 xlabel('A');
 ylabel('B');
 hold on;
-plot(A_star,B_star,'r*');
+plot3(A_star,B_star,1,'b*');
 title('LSE Confidence Set p=0.8,T=300')
 
 % h2 = surf(A_mesh,B_mesh,0.5*ineq_hoefding_recur) ;
@@ -79,8 +82,11 @@ title('LSE Confidence Set p=0.8,T=300')
 % h3 = surf(A_mesh,B_mesh,0.8*double(ineq_chebyshev)) ;
 % set(h3,'LineStyle','none');
 
-h4= surf(A_mesh,B_mesh,0.5*double(ineq_chisquare),'FaceColor','green') ;
+h4= surf(A_mesh,B_mesh,0.7*double(ineq_chisquare),'FaceColor','green') ;
 set(h4,'LineStyle','none');
+
+h5= surf(A_mesh,B_mesh,ineq_gaussian,'FaceColor','red') ;
+set(h5,'LineStyle','none');
 
 map = [1.0 1.0 1.0
     1.0 0 0
@@ -90,16 +96,19 @@ colormap(map)
 % colorbar
 
 alpha(0.5)
-legend([h1, h4], {'LSE', 'Chi-Squared'});
+legend([h1,h4,h5], {'LSE', 'Chi-Squared','Gaussian'});
 zlim([0.01,1.2])
-view(0,90)
+% view(0,90)
 %% Convergence test
-T_series=5:2:350;
+T_series=5:1:350;
 length=size(T_series,2);
 volume_LSE=zeros(length,1);
 volume_chebyshev=zeros(length,1);
 volume_hoeffding=zeros(length,1);
 volume_chisquare=zeros(length,1);
+% log all the estimated sets
+set_chisquare=zeros(size(A_mesh));
+set_LSE=zeros(size(A_mesh));
 
 for t=1:length
     T=T_series(t); 
@@ -133,10 +142,11 @@ for t=1:length
     % log data
     volume_LSE(t)=sum(ineq_LSE,'all')*pixel^2;
     volume_chebyshev(t)=sum(ineq_chebyshev,'all')*pixel^2;
+    set_LSE(:,:,i)=ineq_LSE;
     % volume_hoeffding(t)=sum(ineq_hoefding_recur,'all')*pixel^2;
     volume_chisquare(t)=sum(ineq_chisquare,'all')*pixel^2;
+    set_chisquare(:,:,i)=ineq_chisquare;
     fprintf('Finished analysis for T=%d\n', T);
-
 end
 
 figure('Name','Convergence')
@@ -153,6 +163,6 @@ semilogy(T_series,volume_chisquare)
 legend('LSE','Chebyshev','chisquare')
 
 
-
+save('datas/test1')
 
 
