@@ -68,13 +68,13 @@ ineq_gaussian = calculate_gaussian(X,U,T,A_mesh,B_mesh,p);
 
 %% plot
 %---could be improved---------------------------------------------%
-h1 = surf(A_mesh,B_mesh,0.8*double(ineq_LSE),'FaceColor','blue') ;
+h1 = surf(A_mesh,B_mesh,double(ineq_LSE),'FaceColor','blue') ;
 set(h1,'LineStyle','none');
 xlabel('A');
 ylabel('B');
 hold on;
 plot3(A_star,B_star,1,'b*');
-title('LSE Confidence Set p=0.8,T=300')
+title('LSE Confidence Set p=0.8,T=350')
 
 % h2 = surf(A_mesh,B_mesh,0.5*ineq_hoefding_recur) ;
 % set(h2,'LineStyle','none');
@@ -82,7 +82,7 @@ title('LSE Confidence Set p=0.8,T=300')
 % h3 = surf(A_mesh,B_mesh,0.8*double(ineq_chebyshev)) ;
 % set(h3,'LineStyle','none');
 
-h4= surf(A_mesh,B_mesh,0.7*double(ineq_chisquare),'FaceColor','green') ;
+h4= surf(A_mesh,B_mesh,double(ineq_chisquare),'FaceColor','green') ;
 set(h4,'LineStyle','none');
 
 h5= surf(A_mesh,B_mesh,ineq_gaussian,'FaceColor','red') ;
@@ -163,6 +163,6 @@ semilogy(T_series,volume_chisquare)
 legend('LSE','Chebyshev','chisquare')
 
 
-save('datas/test1')
+% save('datas/test1')
 
 
