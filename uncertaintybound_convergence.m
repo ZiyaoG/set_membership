@@ -3,7 +3,7 @@ clear all;
 close all;
 %% Simulation parameters
 T=350; % 5 250
-p=0.8; % confidence level
+p=0.99; % confidence level
 delta=1-p;
 
 % system parameters
@@ -61,10 +61,10 @@ ineq_LSE = calculate_LSE(X,Z,T,A_mesh,B_mesh,lambda,delta,L,S);
 ineq_chebyshev = calculate_chebyshev(X,U,T,A_mesh,B_mesh,sigma_w,p);
 
 %% chisquare
-ineq_chisquare = calculate_chisquare(X,U,T,A_mesh,B_mesh,p);
+ineq_chisquare = calculate_chisquare(X,U,T,A_mesh,B_mesh,sigma_w,p);
 
 %% gaussian - theretical best of set membership
-ineq_gaussian = calculate_gaussian(X,U,T,A_mesh,B_mesh,p);
+ineq_gaussian = calculate_gaussian(X,U,T,A_mesh,B_mesh,sigma_w,p);
 
 %% plot
 %---could be improved---------------------------------------------%
@@ -74,13 +74,13 @@ xlabel('A');
 ylabel('B');
 hold on;
 plot3(A_star,B_star,1,'b*');
-title('LSE Confidence Set p=0.8,T=350')
+title('LSE Confidence Set p=0.99,T=350')
 
 % h2 = surf(A_mesh,B_mesh,0.5*ineq_hoefding_recur) ;
 % set(h2,'LineStyle','none');
 
-% h3 = surf(A_mesh,B_mesh,0.8*double(ineq_chebyshev)) ;
-% set(h3,'LineStyle','none');
+h3 = surf(A_mesh,B_mesh,double(ineq_chebyshev),'FaceColor','yellow') ;
+set(h3,'LineStyle','none');
 
 h4= surf(A_mesh,B_mesh,double(ineq_chisquare),'FaceColor','green') ;
 set(h4,'LineStyle','none');
@@ -96,11 +96,29 @@ colormap(map)
 % colorbar
 
 alpha(0.5)
-legend([h1,h4,h5], {'LSE', 'Chi-Squared','Gaussian'});
-zlim([0.01,1.2])
+legend([h1,h3,h4,h5], {'LSE', 'Chebyshev', 'Chi-Squared','Gaussian'});
+axis equal
+zlim([0.1,1.1])
 % view(0,90)
+
+
+%% contour
+% figure('Name','Contour plot','Position', [1500 400 300 600])
+% [C_Gaussian,h_Gaussian]=contourm(B_mesh,A_mesh,ineq_gaussian,[0.9 0.99]);
+% % clegendm(C_Gaussian,h_Gaussian)
+% hold on
+% [C_LSE,h_LSE]=contour(A_mesh,B_mesh,double(ineq_LSE),[0.5 0.5],'Edgecolor','r');
+% [C_Chisquared,h_Chisquared]=contour(A_mesh,B_mesh,double(ineq_chisquare),[0.5 0.5],'Edgecolor','g');
+% [C_chebyshev,h_chebyshev]=contour(A_mesh,B_mesh,double(ineq_chebyshev),[0.5 0.5],'Edgecolor','b');
+% plot(A_star,B_star,'b*');
+% grid on
+% axis equal
+% fname = sprintf('figs/contour/contour_sigmaw%0.3f_T%d.png', sigma_w,T);
+% % saveas(gcf,fname)
+% % exportgraphics(gcf,fname)
+
 %% Convergence test
-T_series=5:1:350;
+T_series=5:1:300;
 length=size(T_series,2);
 volume_LSE=zeros(length,1);
 volume_chebyshev=zeros(length,1);
@@ -134,7 +152,7 @@ for t=1:length
     end
 
     ineq_LSE = calculate_LSE(X,Z,T,A_mesh,B_mesh,lambda,delta,L,S);
-    ineq_chisquare = calculate_chisquare(X,U,T,A_mesh,B_mesh,p);
+    ineq_chisquare = calculate_chisquare(X,U,T,A_mesh,B_mesh,sigma_w,p);
     ineq_chebyshev = calculate_chebyshev(X,U,T,A_mesh,B_mesh,sigma_w,p);
     % tic;
     % ineq_hoefding_recur = calculate_hoeffding(X,U,T,A_mesh,B_mesh,sigma_w,p);
@@ -149,20 +167,19 @@ for t=1:length
     fprintf('Finished analysis for T=%d\n', T);
 end
 
-figure('Name','Convergence')
+%% plot 
+figure('Name','Convergence','Position', [800 400 1200 400])
 semilogy(T_series,volume_LSE)
 xlabel('T')
 ylabel('volume')
 hold on
 grid on
 semilogy(T_series,volume_chebyshev)
-% semilogy(T_series,volume_hoeffding)
 semilogy(T_series,volume_chisquare)
 
-% legend('LSE','Chebyshev','Hoeffding','chisquare')
 legend('LSE','Chebyshev','chisquare')
 
-
-% save('datas/test1')
-
+% save('datas/test2_99')
+fname = sprintf('figs/convergence/convergence_sigmaw%0.3f_T%d.png', sigma_w,T);
+exportgraphics(gcf,fname)
 
