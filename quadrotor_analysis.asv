@@ -1,0 +1,20 @@
+% Analysis the datas from geometric controlled quadrototrs and use 
+% set membership to give estimation of the m and J. 
+clear all;
+close all;
+load("datas\quadrotors\sincos05.mat");
+m_est.value=4:0.01:5;
+m_est.flag=ones(size(m_est.value));
+for i=1:size(m_est.value)
+    for j=1:(T/dt-1)
+        tmp=abs(m/dt*(v(:,i+1)-v(:,i))-m_est.value(i)*g*e3+f(j)*R(:,:,j)*e3);
+        if sum(tmp>0.5)>0
+            m_est.flag(i)=0;
+            break;
+        end
+    end
+end
+
+%% plot
+plot(m_est.value(1,:),m_est.flag(1,:),'o')
+
