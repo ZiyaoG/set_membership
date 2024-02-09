@@ -26,7 +26,7 @@ w=zeros([3,T/dt]);
 xd=zeros([3,T/dt]);
 
 f=zeros([1,T/dt]);
-M=
+M=zeros([3,T/dt]);
 
 
 % Innitial condition
@@ -98,15 +98,21 @@ for i=1:(T/dt-1)
     % dynamics update
     % f_dist_t=0;
     % M_dist_t=[0;0;0];
-    f_dist_t=0.5*sin(t);
-    M_dist_t=0.5*[sin(t);cos(2*t);cos(5*t)];
+    f_dist_t=0.5*[sin(5*t);cos(3*t);cos(7*t)];
+    % M_dist_t=0.5*[sin(t);cos(2*t);cos(5*t)];
+    M_dist_t=0.5*[1;1;1];
     [x_next,v_next,R_next,w_next]=quadrotor_dyn(xt,vt,Rt,wt,ft,Mt,f_dist_t,M_dist_t,dt,m,g,J,e3);
+    
 
     % logging
+    f(:,i)=ft;
+    M(:,i)=Mt;
     x(:,i+1)=x_next;
     v(:,i+1)=v_next;
     R(:,:,i+1)=R_next;
     w(:,i+1)=w_next;
+    % for debug
+    tmp=abs(m/dt*(v(:,i+1)-v(:,i))-m*g*e3+ft*Rt*e3);
 
 end
 
@@ -121,17 +127,20 @@ legend('x','xd');
 
 figure('Name','angles')
 subplot(3,1,1)
-plot(w(1,:))
+plot(M(1,:))
 subplot(3,1,2)
-plot(w(2,:))
+plot(M(2,:))
 subplot(3,1,3)
-plot(w(3,:))
+plot(M(3,:))
 
-% if flag ==1
-%     save("datas\quadrotors\sincos05.mat");
-% elseif flag==2
-%     save("datas\quadrotors\flip05.mat");
-% end
+if flag ==1
+    save("datas\quadrotors\Trajecory_Task%0.3f.mat");
+elseif flag==2
+    save("datas\quadrotors\flip05.mat");
+end
+% 
+% fname = sprintf('figs/quadrotors/Trajecory_Task%0.3f.png', flag);
+% exportgraphics(gcf,fname)
 
 
 

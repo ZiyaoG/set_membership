@@ -3,7 +3,7 @@ close all;
 %% This is a set membership test on quadrotor system with a geometric controller. 
 dt=0.002; % 500 Hz
 T=10; % Simulation interval
-flag=1; % 1 for sin traj, 2 for flip
+flag.traj=1; % 1 for sin traj, 2 for flip
 
 % Quadrotor stats
 J=diag([0.082 0.0845 0.1377]);
@@ -32,9 +32,9 @@ M=zeros([3,T/dt]);
 % Innitial condition
 x(:,1)=[0;0;0];
 v(:,1)=[0;0;0];
-if flag ==1 
+if flag.traj ==1 
     R(:,:,1)=eye(3);
-elseif flag == 2
+elseif flag.traj == 2
     R(:,:,1)=[1 0 0;0 -0.995 -0.0314;0 0.0314 -0.9995];
 else
     error("please choose a task")
@@ -52,7 +52,7 @@ for i=1:(T/dt-1)
     b3=Rt*e3;
 
     % error systems
-    [djd,jd,ad,vd,xdt,b1,db1,ddb1]=desired_traj(t,flag);
+    [djd,jd,ad,vd,xdt,b1,db1,ddb1]=desired_traj(t,flag.traj);
     xd(:,i)=xdt;
     ex=xt-xdt;
     ev=vt-vd;
@@ -99,7 +99,9 @@ for i=1:(T/dt-1)
     % f_dist_t=0;
     % M_dist_t=[0;0;0];
     f_dist_t=0.5*[sin(5*t);cos(3*t);cos(7*t)];
-    M_dist_t=0.5*[sin(t);cos(2*t);cos(5*t)];
+    % f_dist_t=0.5*[1;1;1];
+    % M_dist_t=0.5*[sin(t);cos(2*t);cos(5*t)];
+    M_dist_t=0.5*[1;1;1];
     [x_next,v_next,R_next,w_next]=quadrotor_dyn(xt,vt,Rt,wt,ft,Mt,f_dist_t,M_dist_t,dt,m,g,J,e3);
     
 
@@ -124,22 +126,19 @@ hold on
 plot3(xd(1,:),xd(2,:),xd(3,:))
 legend('x','xd');
 
-% figure('Name','angles')
-% subplot(3,1,1)
-% plot(w(1,:))
-% subplot(3,1,2)
-% plot(w(2,:))
-% subplot(3,1,3)
-% plot(w(3,:))
+figure('Name','angles')
+subplot(3,1,1)
+plot(M(1,:))
+subplot(3,1,2)
+plot(M(2,:))
+subplot(3,1,3)
+plot(M(3,:))
 
-% if flag ==1
-%     save("datas\quadrotors\sincos05.mat");
-% elseif flag==2
-%     save("datas\quadrotors\flip05.mat");
-% end
+save('datas\quadrotors\Trajecory_Task1_constMdist05.mat');
 
-fname = sprintf('figs/quadrotors/Trajecory_Task%0.3f.png', flag);
-exportgraphics(gcf,fname)
+% 
+% fname = sprintf('figs/quadrotors/Trajecory_Task%0.3f.png', flag.traj);
+% exportgraphics(gcf,fname)
 
 
 
