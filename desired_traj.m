@@ -1,7 +1,7 @@
 function [djd,jd,ad,vd,xd,b1,db1,ddb1]=desired_traj(t,flag)
     % need forth derivative of position x
     if flag ==1
-        xd=[0.4*t;0.4*sin(pi*t);0.6*cos(pi*t)];
+        xd=[0.4*t;0.4*sin(pi*t);2+0.6*cos(pi*t)];
         b1=[cos(pi*t);sin(pi*t);0];
         vd=[0.4;0.4*pi*cos(pi*t);0.6*pi*(-sin(pi*t))];
         ad=[0;0.4*pi^2*(-sin(pi*t));-0.6*pi^2*cos(pi*t)];

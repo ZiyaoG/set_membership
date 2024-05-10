@@ -1,15 +1,15 @@
 
 clear all;
 close all;
-% load("datas\quadrotors\Trajecory_Task1_tg_f05_M05.mat");
+load("datas\quadrotors\Trajecory_Task1_tg_f05_M05.mat");
 % load("datas\quadrotors\Trajecory_Task1_test.mat");
-load("datas\quadrotors\Trajecory_Task1_uniform_f05_M05.mat");
+% load("datas\quadrotors\Trajecory_Task1_uniform_f05_M05.mat");
 
 loose=1;
 % B=loose*[1;1;1];
 B=loose*[0.5;0.5;0.5];
 start_point=100;
-end_point=2000;
+end_point=1000;
 step=100;
 Diameter_J=zeros([size(start_point:step:end_point,2),1]);
 
@@ -31,7 +31,7 @@ for n=start_point:step:end_point
         Constraints=[Constraints,LMI_j1,LMI_j2];
     end
 
-    Objective =  abs(J1_1-J2_1)+abs(J1_2-J2_2)+abs(J1_3-J2_3);
+    Objective =  (J1_1-J2_1)^2+(J1_2-J2_2)^2+(J1_3-J2_3)^2;
     options = sdpsettings('verbose', 0); % Choose a solver that is available and appropriate
     sol = optimize(Constraints, -Objective, options);
     
@@ -49,7 +49,7 @@ for n=start_point:step:end_point
         disp('No solution found');
         return;
     end
-    Diameter_J(n/step,1)=norm(J1_value-J2_value);
+    Diameter_J(n,1)=norm(J1_value-J2_value);
 end
 %%
 % plot(dt*(i+(1:data_number)),Diameter_J)

@@ -41,6 +41,15 @@ else
 end
 w(:,1)=[0;0;0];
 
+% Gaussian noise
+pd = makedist('Normal');
+tru_gp = truncate(pd,-1,1);
+f_dist = random(tru_gp,T/dt,3);
+M_dist = random(tru_gp,T/dt,3);
+
+% uniform noise
+% f_dist = -0.2+0.4*rand(T/dt,3);
+% M_dist = -0.2+0.4*rand(T/dt,3);
 
 for i=1:(T/dt-1)
     % at time t
@@ -98,10 +107,11 @@ for i=1:(T/dt-1)
     % dynamics update
     % f_dist_t=0;
     % M_dist_t=[0;0;0];
-    f_dist_t=0.5*[sin(5*t);cos(3*t);cos(7*t)];
-    % f_dist_t=0.5*[1;1;1];
+    % f_dist_t=0.5*[sin(5*t);cos(3*t);cos(7*t)];
+    f_dist_t=0.5*f_dist(i,:)';
+    % M_dist_t=0.5*[1;1;1];
     % M_dist_t=0.5*[sin(t);cos(2*t);cos(5*t)];
-    M_dist_t=0.5*[1;1;1];
+    M_dist_t=0.5*M_dist(i,:)';
     [x_next,v_next,R_next,w_next]=quadrotor_dyn(xt,vt,Rt,wt,ft,Mt,f_dist_t,M_dist_t,dt,m,g,J,e3);
     
 
@@ -119,22 +129,27 @@ end
 
 
 %% plot
-figure('Name','position')
-plot3(x(1,:),x(2,:),x(3,:))
-grid on
-hold on
-plot3(xd(1,:),xd(2,:),xd(3,:))
-legend('x','xd');
+% figure('Name','position')
+% plot3(x(1,:),x(2,:),x(3,:))
+% grid on
+% hold on
+% plot3(xd(1,:),xd(2,:),xd(3,:))
+% legend('x','xd');
+% axis equal
+% 
+% figure('Name','angles')
+% subplot(3,1,1)
+% plot(M(1,:))
+% subplot(3,1,2)
+% plot(M(2,:))
+% subplot(3,1,3)
+% plot(M(3,:))
 
-figure('Name','angles')
-subplot(3,1,1)
-plot(M(1,:))
-subplot(3,1,2)
-plot(M(2,:))
-subplot(3,1,3)
-plot(M(3,:))
+save('datas\quadrotors\tg\Trajecory1_Task1_tg_f05_M05.mat');
+% save('datas\quadrotors\Trajecory_Task1_test.mat'); % sin cos noise
+% save('datas\quadrotors\Trajecory_augdyn_Task1_uniform_f02_M02.mat');
+% save('datas\quadrotors\Trajecory_augdyn_Task1_nonoise.mat');
 
-save('datas\quadrotors\Trajecory_Task1_constMdist05.mat');
 
 % 
 % fname = sprintf('figs/quadrotors/Trajecory_Task%0.3f.png', flag.traj);
